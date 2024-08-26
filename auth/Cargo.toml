@@ -1,0 +1,23 @@
+[package]
+name = "auth"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+soroban-sdk = { version = "22.0.0-rc.1" }
+
+[dev-dependencies]
+soroban-sdk = { version = "22.0.0-rc.1", features = ["testutils"] }
+# token = { path = "../token" }
+sha2 = "0.10.8  "
+
+[patch.crates-io.soroban-sdk]
+git = "https://github.com/stellar/rs-soroban-sdk"
+rev = "a10194077e605b0bcf1b2c9e2416f214a6f30b73"
+
+[patch."https://github.com/stellar/rs-soroban-env".soroban-env-host]
+path = "../../rs-soroban-env/soroban-env-host"

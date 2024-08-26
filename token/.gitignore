@@ -1,0 +1,10 @@
+# cargo
+target
+
+# stellar-cli
+.soroban
+
+# cargo-fuzz
+corpus
+artifacts
+coverage
