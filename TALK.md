@@ -95,13 +95,18 @@ snapshot testing (real mainnet data)
      - then use that test to confirm the bug is fixed
 
 fuzz testing 👀
-end-to-end testing
-system testing
-state machine testing 👀
+ - identify unexpected failures
+   - failures always rollback, unless you try invoke another contract then its failures won't necessarily depending on what your contract does with the error returned
+   - more about identifying failures that might mean your contract is pegged in some state
+ - identify guarantees that aren't always true, and might not be true in cases not considered
+ - use cargo-fuzz
+ - inputs to fuzz tests are randomly generated
+ - all sdk types can be inputs to fuzz tests
 
-functional testing
-performance testing
-regression testing
+end-to-end testing
+ - run quickstart in ci
+
+state machine testing 👀
 
 differential testing / fuzzing 👀
  - contracts change over time
@@ -114,9 +119,6 @@ invariant testing 👀
  - forces you to say what is always true, what guarantees does your contract make
  - debug_assert in code
  - run a function at the end of every test to check that the contract state fits some rules
-
-user acceptance testing
-ux testing
 
 formal verification 👀
  - whole new level of invariant testing
