@@ -116,6 +116,8 @@ differential testing / fuzzing 👀
  - compare results against native build
 
 invariant testing 👀
+ - not really practical to do at runtime, don't have access to all data, can't do invariant testing like "all balances add to N" or all contracts are "Y"
+ - can write invariant tests about the data loaded in a single invocation
  - forces you to say what is always true, what guarantees does your contract make
  - debug_assert in code
  - run a function at the end of every test to check that the contract state fits some rules
