@@ -1,11 +1,10 @@
 #![cfg(test)]
+
 use soroban_sdk::{
     contract, contractimpl, log,
     testutils::MockAuthContract,
     xdr::{
-        HashIdPreimage, HashIdPreimageSorobanAuthorization, InvokeContractArgs, Limits, ScBytes, ScMap, ScMapEntry,
-        ScVal, SorobanAddressCredentials, SorobanAuthorizationEntry, SorobanAuthorizedFunction,
-        SorobanAuthorizedInvocation, SorobanCredentials, WriteXdr,
+        HashIdPreimage, HashIdPreimageSorobanAuthorization, InvokeContractArgs, Limits, ScAddress, ScBytes, ScMap, ScMapEntry, ScVal, SorobanAddressCredentials, SorobanAuthorizationEntry, SorobanAuthorizedFunction, SorobanAuthorizedInvocation, SorobanCredentials, WriteXdr
     },
     Address, Env, IntoVal,
 };
@@ -24,13 +23,19 @@ impl TestContract {
     }
 }
 
+mockall::mock! {
+    pub Mocks {
+        pub fn balance(addr: ScAddress) -> i128;
+    }
+}
+
 #[contract]
-struct TestToken;
+pub struct TestToken;
 
 #[contractimpl]
 impl TestToken {
-    pub fn balance(_addr: Address) -> i128 {
-        1
+    pub fn balance(addr: Address) -> i128 {
+        MockMocks::balance(addr.into())
     }
 }
 
@@ -40,7 +45,8 @@ fn fail() {
     let env = Env::default();
 
     // Deploy a token, that accounts will hold to gain authority over the auth
-    // contract. The token contract pretends that everyone has one token.
+    // contract. The token contract pretends that holder 1 has one token, and
+    // holder 2 has none.
     let token_id = env.register_contract(None, TestToken);
 
     // Deploy the auth contract, that accounts holding the token can control.
@@ -56,6 +62,18 @@ fn fail() {
     // Create two accounts who will hold 1 token each.
     let holder_1 = env.register_contract(None, MockAuthContract);
     log!(&env, "holder_1", holder_1);
+    let holder_2 = env.register_contract(None, MockAuthContract);
+    log!(&env, "holder_2", holder_2);
+
+    let holder_1_scaddr: ScAddress = (&holder_1).into();
+    let mock_ctx = MockMocks::balance_context();
+    mock_ctx.expect().returning(move |addr| {
+        if addr == holder_1_scaddr {
+            1
+        } else {
+            0
+        }
+    });
 
     let root_invocation = SorobanAuthorizedInvocation {
         function: SorobanAuthorizedFunction::ContractFn(InvokeContractArgs {
@@ -84,10 +102,16 @@ fn fail() {
                 nonce: 0,
                 signature_expiration_ledger: 0,
                 signature: ScVal::Map(Some(ScMap(
-                    [ScMapEntry {
-                        key: (&holder_1).into(),
-                        val: ScVal::Void,
-                    }]
+                    [
+                        ScMapEntry {
+                            key: (&holder_1).into(),
+                            val: ScVal::Void,
+                        },
+                        ScMapEntry {
+                            key: (&holder_2).into(),
+                            val: ScVal::Void,
+                        },
+                    ]
                     .try_into()
                     .unwrap(),
                 ))),
@@ -97,6 +121,24 @@ fn fail() {
         SorobanAuthorizationEntry {
             credentials: SorobanCredentials::Address(SorobanAddressCredentials {
                 address: (&holder_1).clone().into(),
+                nonce: 0,
+                signature_expiration_ledger: 0,
+                signature: ScVal::Void,
+            }),
+            root_invocation: SorobanAuthorizedInvocation {
+                function: SorobanAuthorizedFunction::ContractFn(InvokeContractArgs {
+                    contract_address: (&auth_id).into(),
+                    function_name: "__check_auth".try_into().unwrap(),
+                    args: [ScVal::Bytes(ScBytes(signed_payload.as_slice().try_into().unwrap()))]
+                        .try_into()
+                        .unwrap(),
+                }),
+                sub_invocations: [].try_into().unwrap(),
+            },
+        },
+        SorobanAuthorizationEntry {
+            credentials: SorobanCredentials::Address(SorobanAddressCredentials {
+                address: (&holder_2).clone().into(),
                 nonce: 0,
                 signature_expiration_ledger: 0,
                 signature: ScVal::Void,

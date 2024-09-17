@@ -12,8 +12,8 @@ soroban-sdk = { version = "22.0.0-rc.1" }
 
 [dev-dependencies]
 soroban-sdk = { version = "22.0.0-rc.1", features = ["testutils"] }
-# token = { path = "../token" }
 sha2 = "0.10.8  "
+mockall = "0.13.0"
 
 [patch.crates-io.soroban-sdk]
 git = "https://github.com/stellar/rs-soroban-sdk"

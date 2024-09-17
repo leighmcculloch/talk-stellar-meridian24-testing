@@ -1,4 +1,5 @@
 #![cfg(test)]
+
 use soroban_sdk::{
     contract, contractimpl, log,
     testutils::MockAuthContract,
@@ -24,13 +25,19 @@ impl TestContract {
     }
 }
 
+mockall::mock! {
+    pub F {
+        pub fn balance(addr: Address) -> i128;
+    }
+}
+
 #[contract]
-struct TestToken;
+pub struct TestToken;
 
 #[contractimpl]
 impl TestToken {
-    pub fn balance(_addr: Address) -> i128 {
-        1
+    pub fn balance(addr: Address) -> i128 {
+        MockF::balance(addr)
     }
 }
 
@@ -57,6 +64,9 @@ fn pass() {
     log!(&env, "holder_1", holder_1);
     let holder_2 = env.register_contract(None, MockAuthContract);
     log!(&env, "holder_2", holder_2);
+
+    let mock_ctx = MockF::balance_context();
+    mock_ctx.expect().returning(|_| 1);
 
     let root_invocation = SorobanAuthorizedInvocation {
         function: SorobanAuthorizedFunction::ContractFn(InvokeContractArgs {
