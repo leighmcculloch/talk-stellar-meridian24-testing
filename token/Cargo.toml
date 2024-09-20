@@ -5,10 +5,16 @@ edition = "2021"
 publish = false
 
 [lib]
-crate-type = ["lib", "cdylib"]
+crate-type = ["cdylib"]
 
 [dependencies]
-soroban-sdk = { version = "21" }
+soroban-sdk = { version = "22.0.0-rc.1" }
 
 [dev-dependencies]
-soroban-sdk = { version = "21", features = ["testutils"] }
+soroban-sdk = { version = "22.0.0-rc.1", features = ["testutils"] }
+sha2 = "0.10.8  "
+mockall = "0.13.0"
+
+[patch.crates-io.soroban-sdk]
+git = "https://github.com/stellar/rs-soroban-sdk"
+rev = "d2d68f2f83553994d187b0a00d2062425d82d02b"
