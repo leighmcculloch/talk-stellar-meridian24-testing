@@ -1151,7 +1151,7 @@ dependencies = [
 [[package]]
 name = "soroban-ledger-snapshot"
 version = "22.0.0-rc.1"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=d2d68f2f83553994d187b0a00d2062425d82d02b#d2d68f2f83553994d187b0a00d2062425d82d02b"
+source = "git+https://github.com/stellar/rs-soroban-sdk?branch=main#9507fc4e68677199171a8a7b263458d435ae15a2"
 dependencies = [
  "serde",
  "serde_json",
@@ -1164,7 +1164,7 @@ dependencies = [
 [[package]]
 name = "soroban-sdk"
 version = "22.0.0-rc.1"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=d2d68f2f83553994d187b0a00d2062425d82d02b#d2d68f2f83553994d187b0a00d2062425d82d02b"
+source = "git+https://github.com/stellar/rs-soroban-sdk?branch=main#9507fc4e68677199171a8a7b263458d435ae15a2"
 dependencies = [
  "arbitrary",
  "bytes-lit",
@@ -1183,7 +1183,7 @@ dependencies = [
 [[package]]
 name = "soroban-sdk-macros"
 version = "22.0.0-rc.1"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=d2d68f2f83553994d187b0a00d2062425d82d02b#d2d68f2f83553994d187b0a00d2062425d82d02b"
+source = "git+https://github.com/stellar/rs-soroban-sdk?branch=main#9507fc4e68677199171a8a7b263458d435ae15a2"
 dependencies = [
  "crate-git-revision",
  "darling",
@@ -1202,7 +1202,7 @@ dependencies = [
 [[package]]
 name = "soroban-spec"
 version = "22.0.0-rc.1"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=d2d68f2f83553994d187b0a00d2062425d82d02b#d2d68f2f83553994d187b0a00d2062425d82d02b"
+source = "git+https://github.com/stellar/rs-soroban-sdk?branch=main#9507fc4e68677199171a8a7b263458d435ae15a2"
 dependencies = [
  "base64 0.13.1",
  "stellar-xdr",
@@ -1213,7 +1213,7 @@ dependencies = [
 [[package]]
 name = "soroban-spec-rust"
 version = "22.0.0-rc.1"
-source = "git+https://github.com/stellar/rs-soroban-sdk?rev=d2d68f2f83553994d187b0a00d2062425d82d02b#d2d68f2f83553994d187b0a00d2062425d82d02b"
+source = "git+https://github.com/stellar/rs-soroban-sdk?branch=main#9507fc4e68677199171a8a7b263458d435ae15a2"
 dependencies = [
  "prettyplease",
  "proc-macro2",
