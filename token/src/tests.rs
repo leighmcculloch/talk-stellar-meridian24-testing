@@ -1,49 +1,65 @@
 #![cfg(test)]
 
-use soroban_sdk::{testutils::Address as _, testutils::Events as _, vec, Address, Env};
+use soroban_sdk::{testutils::Address as _, vec, Address, Env};
+use testutils::{Events, MockAuth, MockAuthInvoke};
 
 use super::*;
 
 #[test]
 fn test() {
     let env = Env::default();
-    let a = Address::generate(&env);
-    let id = env.register(Token, (vec![&env, (a.clone(), 10i128)],));
+
+    let admin = Address::generate(&env);
+    let id = env.register(Token, (&admin,));
     let token = TokenClient::new(&env, &id);
-    assert_eq!(token.balance(&a), 10);
+
+    let a = Address::generate(&env);
+    assert_eq!(token.balance(&a), 0);
 }
 
 #[test]
 fn test_transfer() {
     let env = Env::default();
-    let a = Address::generate(&env);
-    let b = Address::generate(&env);
-    let id = env.register(
-        Token,
-        (vec![&env, (a.clone(), 10i128), (b.clone(), 11i128)],),
-    );
+    let admin = Address::generate(&env);
+    let id = env.register(Token, (&admin,));
     let token = TokenClient::new(&env, &id);
+
+    let a = Address::generate(&env);
+    token.mock_all_auths().mint(&a, &10);
+    let b = Address::generate(&env);
     assert_eq!(token.balance(&a), 10);
-    assert_eq!(token.balance(&b), 11);
-    token.mock_all_auths().transfer(&a, &b, &2);
+    assert_eq!(token.balance(&b), 0);
+
+    token
+        .mock_auths(&[MockAuth {
+            address: &a,
+            invoke: &MockAuthInvoke {
+                contract: &token.address,
+                fn_name: "transfer",
+                args: (&a, &b, 2i128).into_val(&env),
+                sub_invokes: &[],
+            },
+        }])
+        .transfer(&a, &b, &2);
+
+    assert_eq!(token.balance(&a), 8);
+    assert_eq!(token.balance(&b), 2);
+
     assert_eq!(
         env.events().all(),
         vec![
             &env,
             (
-                id,
+                token.address.clone(),
                 (symbol_short!("transfer"), &a, &b).into_val(&env),
-                2i128.into_val(&env)
+                2i128.into_val(&env),
             )
-        ]
+        ],
     );
-    assert_eq!(token.balance(&a), 8);
-    assert_eq!(token.balance(&b), 13);
 }
 
 #[contract]
 struct Pause;
-
 #[contractimpl]
 impl Pause {
     pub fn paused() -> bool {
@@ -54,6 +70,26 @@ impl Pause {
 #[test]
 fn test_mock() {
     let env = Env::default();
-    let pause_id = env.register(Pause, ());
-    // Use pause mock in Token setup ...
+    let admin = Address::generate(&env);
+    let pause = env.register(Pause, ());
+    let id = env.register(Token, (&admin, &pause));
+    let token = TokenClient::new(&env, &id);
+
+    // ...
 }
+
+mod pause {
+    soroban_sdk::contractimport!(file = "pause.wasm");
+}
+
+#[test]
+fn test_mock() {
+    let env = Env::default();
+    let admin = Address::generate(&env);
+    let pause = env.register(pause::WASM, ());
+    let id = env.register(Token, (&admin, &pause));
+    let token = TokenClient::new(&env, &id);
+
+    // ...
+}
+

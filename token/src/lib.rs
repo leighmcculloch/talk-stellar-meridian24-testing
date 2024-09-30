@@ -13,36 +13,45 @@ pub struct Token;
 
 #[contractimpl]
 impl Token {
-    // Initialize the token with an initial mint.
-    pub fn __constructor(env: &Env, mint: Vec<(Address, i128)>) {
-        for (id, bal) in mint {
-            env.storage().persistent().set(&id, &bal);
-        }
+    pub fn __constructor(env: &Env, admin: Address) {
+        env.storage().persistent().set(&"ADMIN", &admin);
     }
 
-    // Get the balance held by the address.
+    pub fn mint(env: &Env, to: Address, amount: i128) -> Result<(), Error> {
+        env.storage()
+            .persistent()
+            .get::<_, Address>(&"ADMIN")
+            .unwrap()
+            .require_auth();
+        env.storage().persistent().try_update(&to, |bal| {
+            let bal = bal.unwrap_or(0i128);
+            bal.checked_add(amount).ok_or(Error::Overflow)
+        })?;
+        Ok(())
+    }
+
     pub fn balance(env: &Env, addr: Address) -> i128 {
         env.storage().persistent().get(&addr).unwrap_or(0)
     }
 
-    // Transfer `amount` from `from` to `to`.
-    // Requires auth from `from`.
     pub fn transfer(env: &Env, from: Address, to: Address, amount: i128) -> Result<(), Error> {
         from.require_auth();
         if amount < 0 {
             return Err(Error::NegativeAmount);
         }
 
-        let from_bal: i128 = env.storage().persistent().get(&from).unwrap_or(0);
-        if from_bal < amount {
-            return Err(Error::InsufficientBalance);
-        }
-        let from_bal = from_bal.checked_sub(amount).ok_or(Error::Overflow)?;
-        env.storage().persistent().set(&from, &from_bal);
+        env.storage().persistent().try_update(&from, |bal| {
+            let bal = bal.unwrap_or(0i128);
+            if bal < amount {
+                return Err(Error::InsufficientBalance);
+            }
+            bal.checked_sub(amount).ok_or(Error::Overflow)
+        })?;
 
-        let to_bal: i128 = env.storage().persistent().get(&to).unwrap_or(0);
-        let to_bal = to_bal.checked_add(amount).ok_or(Error::Overflow)?;
-        env.storage().persistent().set(&to, &to_bal);
+        env.storage().persistent().try_update(&to, |bal| {
+            let bal = bal.unwrap_or(0i128);
+            bal.checked_add(amount).ok_or(Error::Overflow)
+        })?;
 
         env.events()
             .publish((symbol_short!("transfer"), &from, &to), amount);
