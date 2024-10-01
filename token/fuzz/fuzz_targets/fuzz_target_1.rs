@@ -1,10 +1,12 @@
 #![no_main]
 
+use ::token::*;
 use libfuzzer_sys::fuzz_target;
+use soroban_sdk::testutils::arbitrary::*;
+use soroban_sdk::testutils::Address as _;
 use soroban_sdk::*;
-use soroban_sdk::testutils::*;
 
-#[derive(Arbitrary)]
+#[derive(Arbitrary, Debug)]
 pub struct Input {
     pub a: i128,
     pub b: i128,
