@@ -56,7 +56,15 @@ impl Token {
         env.events()
             .publish((symbol_short!("transfer"), &from, &to), amount);
 
+        Self::invariant_balance_gte_zero(env, &[from, to]);
+
         Ok(())
+    }
+
+    fn invariant_balance_gte_zero(env: &Env, addrs: &[Address]) {
+        for addr in addrs {
+            assert!(Self::balance(env, addr.clone()) >= 0);
+        }
     }
 }
 

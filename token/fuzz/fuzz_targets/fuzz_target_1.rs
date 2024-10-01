@@ -2,6 +2,7 @@
 
 use libfuzzer_sys::fuzz_target;
 use soroban_sdk::*;
+use soroban_sdk::testutils::*;
 
 #[derive(Arbitrary)]
 pub struct Input {

@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use soroban_sdk::{testutils::Address as _, vec, Address, Env};
-use testutils::{Events, MockAuth, MockAuthInvoke};
+use testutils::{AuthorizedFunction, AuthorizedInvocation, Events};
 
 use super::*;
 
@@ -30,17 +30,22 @@ fn test_transfer() {
     assert_eq!(token.balance(&a), 10);
     assert_eq!(token.balance(&b), 0);
 
-    token
-        .mock_auths(&[MockAuth {
-            address: &a,
-            invoke: &MockAuthInvoke {
-                contract: &token.address,
-                fn_name: "transfer",
-                args: (&a, &b, 2i128).into_val(&env),
-                sub_invokes: &[],
-            },
-        }])
-        .transfer(&a, &b, &2);
+    token.mock_all_auths().transfer(&a, &b, &2);
+
+    assert_eq!(
+        env.auths(),
+        [(
+            a.clone(),
+            AuthorizedInvocation {
+                function: AuthorizedFunction::Contract((
+                    token.address.clone(),
+                    symbol_short!("transfer"),
+                    (&a, &b, 2i128).into_val(&env),
+                )),
+                sub_invocations: [].into(),
+            }
+        ),]
+    );
 
     assert_eq!(token.balance(&a), 8);
     assert_eq!(token.balance(&b), 2);
@@ -73,23 +78,22 @@ fn test_mock() {
     let admin = Address::generate(&env);
     let pause = env.register(Pause, ());
     let id = env.register(Token, (&admin, &pause));
-    let token = TokenClient::new(&env, &id);
+    let _token = TokenClient::new(&env, &id);
 
     // ...
 }
 
-mod pause {
-    soroban_sdk::contractimport!(file = "pause.wasm");
-}
+// mod pause {
+//     soroban_sdk::contractimport!(file = "pause.wasm");
+// }
 
-#[test]
-fn test_mock() {
-    let env = Env::default();
-    let admin = Address::generate(&env);
-    let pause = env.register(pause::WASM, ());
-    let id = env.register(Token, (&admin, &pause));
-    let token = TokenClient::new(&env, &id);
+// #[test]
+// fn test_import() {
+//     let env = Env::default();
+//     let admin = Address::generate(&env);
+//     let pause = env.register(pause::WASM, ());
+//     let id = env.register(Token, (&admin, &pause));
+//     let token = TokenClient::new(&env, &id);
 
-    // ...
-}
-
+//     // ...
+// }
