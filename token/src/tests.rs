@@ -73,14 +73,42 @@ impl Pause {
 }
 
 #[test]
-fn test_mock() {
+fn test_mock_false() {
     let env = Env::default();
     let admin = Address::generate(&env);
     let pause = env.register(Pause, ());
     let id = env.register(Token, (&admin, &pause));
-    let _token = TokenClient::new(&env, &id);
+    let token = TokenClient::new(&env, &id);
 
-    // ...
+    let a = Address::generate(&env);
+    token.mock_all_auths().mint(&a, &10);
+    let b = Address::generate(&env);
+
+    assert_eq!(token.mock_all_auths().try_transfer(&a, &b, &2), Ok(Ok(())));
+
+    assert_eq!(token.balance(&a), 8);
+    assert_eq!(token.balance(&b), 2);
+}
+
+#[test]
+fn test_mock_true() {
+    let env = Env::default();
+    let admin = Address::generate(&env);
+    let pause = env.register(Pause, ());
+    let id = env.register(Token, (&admin, &pause));
+    let token = TokenClient::new(&env, &id);
+
+    let a = Address::generate(&env);
+    token.mock_all_auths().mint(&a, &10);
+    let b = Address::generate(&env);
+
+    assert_eq!(
+        token.mock_all_auths().try_transfer(&a, &b, &2),
+        Err(Ok(Error::Paused))
+    );
+
+    assert_eq!(token.balance(&a), 8);
+    assert_eq!(token.balance(&b), 2);
 }
 
 // mod pause {

@@ -2,10 +2,12 @@
 use soroban_sdk::*;
 
 #[contracterror]
+#[derive(Debug, PartialEq)]
 pub enum Error {
     Overflow = 1,
     InsufficientBalance = 2,
     NegativeAmount = 3,
+    Paused = 4,
 }
 
 #[contract]
