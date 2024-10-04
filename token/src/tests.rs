@@ -125,3 +125,37 @@ fn test_mock_true() {
 
 //     // ...
 // }
+
+// #[contract]
+// struct Token;
+// #[contractimpl]
+// impl Token {
+//     // ...
+// }
+
+mod token {
+    soroban_sdk::contractimport!(file = "target/wasm32-unknown-unknown/release/token.wasm");
+}
+
+#[test]
+fn test_differential() {
+    assert_eq!({
+        let env = Env::default();
+        let id = env.register(Token, (&Address::generate(&env),));
+        let token = TokenClient::new(&env, &id);
+        let a = Address::generate(&env);
+        let b = Address::generate(&env);
+        token.mock_all_auths().mint(&a, &10);
+        token.mock_all_auths().transfer(&a, &b, &2);
+        (token.balance(&a), token.balance(&b))
+    }, {
+        let env = Env::default();
+        let id = env.register(token::WASM, (&Address::generate(&env),));
+        let token = TokenClient::new(&env, &id);
+        let a = Address::generate(&env);
+        let b = Address::generate(&env);
+        token.mock_all_auths().mint(&a, &10);
+        token.mock_all_auths().transfer(&a, &b, &2);
+        (token.balance(&a), token.balance(&b))
+    });
+}
