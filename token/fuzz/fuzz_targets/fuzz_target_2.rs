@@ -1,10 +1,12 @@
 #![no_main]
 
-use ::token::*;
 use libfuzzer_sys::fuzz_target;
 use soroban_sdk::testutils::arbitrary::*;
 use soroban_sdk::testutils::Address as _;
-use soroban_sdk::*;
+use soroban_sdk::Address;
+use soroban_sdk::Env;
+use soroban_sdk::IntoVal;
+use token::*;
 
 #[derive(Arbitrary, Debug)]
 pub enum Action {

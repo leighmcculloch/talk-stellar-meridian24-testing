@@ -1,10 +1,11 @@
 #![no_main]
 
-use ::token::*;
 use libfuzzer_sys::fuzz_target;
 use soroban_sdk::testutils::arbitrary::*;
 use soroban_sdk::testutils::Address as _;
-use soroban_sdk::*;
+use soroban_sdk::Address;
+use soroban_sdk::Env;
+use token::*;
 
 #[derive(Arbitrary, Debug)]
 pub struct Input {
@@ -20,9 +21,9 @@ fuzz_target!(|input: Input| {
     let token = TokenClient::new(&env, &id);
 
     let a = Address::generate(&env);
-    token.mock_all_auths().mint(&a, &input.a);
+    _ = token.mock_all_auths().try_mint(&a, &input.a);
     let b = Address::generate(&env);
-    token.mock_all_auths().mint(&b, &input.b);
+    _ = token.mock_all_auths().try_mint(&b, &input.b);
 
     let result = token.mock_all_auths().try_transfer(&a, &b, &input.amount);
     match result {

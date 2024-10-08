@@ -139,23 +139,48 @@ mod token {
 
 #[test]
 fn test_differential() {
-    assert_eq!({
-        let env = Env::default();
-        let id = env.register(Token, (&Address::generate(&env),));
-        let token = TokenClient::new(&env, &id);
-        let a = Address::generate(&env);
-        let b = Address::generate(&env);
-        token.mock_all_auths().mint(&a, &10);
-        token.mock_all_auths().transfer(&a, &b, &2);
-        (token.balance(&a), token.balance(&b))
-    }, {
-        let env = Env::default();
-        let id = env.register(token::WASM, (&Address::generate(&env),));
-        let token = TokenClient::new(&env, &id);
-        let a = Address::generate(&env);
-        let b = Address::generate(&env);
-        token.mock_all_auths().mint(&a, &10);
-        token.mock_all_auths().transfer(&a, &b, &2);
-        (token.balance(&a), token.balance(&b))
-    });
+    assert_eq!(
+        {
+            let env = Env::default();
+            let id = env.register(Token, (&Address::generate(&env),));
+            let token = TokenClient::new(&env, &id);
+            let a = Address::generate(&env);
+            let b = Address::generate(&env);
+            token.mock_all_auths().mint(&a, &10);
+            token.mock_all_auths().transfer(&a, &b, &2);
+            (token.balance(&a), token.balance(&b))
+        },
+        {
+            let env = Env::default();
+            let id = env.register(token::WASM, (&Address::generate(&env),));
+            let token = TokenClient::new(&env, &id);
+            let a = Address::generate(&env);
+            let b = Address::generate(&env);
+            token.mock_all_auths().mint(&a, &10);
+            token.mock_all_auths().transfer(&a, &b, &2);
+            (token.balance(&a), token.balance(&b))
+        }
+    );
+}
+
+#[test]
+fn test_fuzz_input() {
+    let env = Env::default();
+    let admin = Address::generate(&env);
+    let id = env.register(Token, (&admin,));
+    let token = TokenClient::new(&env, &id);
+
+    let a = Address::generate(&env);
+    let b = Address::generate(&env);
+    token
+        .mock_all_auths()
+        .mint(&a, &153460675278070287436989092455595078410);
+    token
+        .mock_all_auths()
+        .mint(&b, &-153460675206609473784003740839808109709);
+    let result =
+        token
+            .mock_all_auths()
+            .try_transfer(&a, &b, &152936248224755868940867793706107833484);
+    assert_eq!(result, Ok(Ok(())));
 }

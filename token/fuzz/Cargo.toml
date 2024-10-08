@@ -8,7 +8,7 @@ edition = "2021"
 cargo-fuzz = true
 
 [dependencies]
-libfuzzer-sys = "0.4"
+libfuzzer-sys = "=0.4.0"
 soroban-sdk = { version = "22.0.0-rc.1", features = ["testutils"] }
 
 [dependencies.token]
@@ -16,7 +16,7 @@ path = ".."
 
 [patch.crates-io.soroban-sdk]
 git = "https://github.com/stellar/rs-soroban-sdk"
-branch = "main"
+rev = "9634810c7f4744bfd4d65c3c6824290e01af839d"
 
 [[bin]]
 name = "fuzz_target_1"
@@ -31,6 +31,3 @@ path = "fuzz_targets/fuzz_target_2.rs"
 test = false
 doc = false
 bench = false
-
-[profile.release]
-lto = false

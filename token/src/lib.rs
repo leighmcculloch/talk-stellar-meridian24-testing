@@ -20,6 +20,9 @@ impl Token {
     }
 
     pub fn mint(env: &Env, to: Address, amount: i128) -> Result<(), Error> {
+        if amount < 0 {
+            return Err(Error::NegativeAmount);
+        }
         env.storage()
             .persistent()
             .get::<_, Address>(&"ADMIN")
@@ -29,6 +32,7 @@ impl Token {
             let bal = bal.unwrap_or(0i128);
             bal.checked_add(amount).ok_or(Error::Overflow)
         })?;
+        Self::invariant_balance_gte_zero(env, &[to]);
         Ok(())
     }
 
