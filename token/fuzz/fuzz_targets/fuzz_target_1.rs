@@ -21,8 +21,8 @@ fuzz_target!(|input: Input| {
     let token = TokenClient::new(&env, &id);
 
     let a = Address::generate(&env);
-    _ = token.mock_all_auths().try_mint(&a, &input.a);
     let b = Address::generate(&env);
+    _ = token.mock_all_auths().try_mint(&a, &input.a);
     _ = token.mock_all_auths().try_mint(&b, &input.b);
 
     let result = token.mock_all_auths().try_transfer(&a, &b, &input.amount);

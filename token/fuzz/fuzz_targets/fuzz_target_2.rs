@@ -28,13 +28,19 @@ fuzz_target!(|actions: std::vec::Vec<Action>| {
 
     for a in actions {
         match a {
-            Action::Mint(addr, amount) => _ = token.try_mint(&addr.into_val(&env), &amount),
-            Action::Balance(addr) => _ = token.try_balance(&addr.into_val(&env)),
+            Action::Mint(addr, amount) => {
+                _ = token.try_mint(&addr.into_val(&env), &amount);
+                assert!(token.balance(&addr.into_val(&env)) >= 0);
+            },
+            Action::Balance(addr) => {
+                _ = token.try_balance(&addr.into_val(&env));
+                assert!(token.balance(&addr.into_val(&env)) >= 0);
+            },
             Action::Transfer(from, to, amount) => {
-                _ = token.try_transfer(&from.into_val(&env), &to.into_val(&env), &amount)
+                _ = token.try_transfer(&from.into_val(&env), &to.into_val(&env), &amount);
+                assert!(token.balance(&from.into_val(&env)) >= 0);
+                assert!(token.balance(&to.into_val(&env)) >= 0);
             }
         }
     }
-
-    // assert on invariants
 });
